@@ -1,6 +1,6 @@
 from unittest import TestCase
 from app import app
-from flask import session
+from flask import session, config, json
 from boggle import Boggle
 
 
@@ -17,7 +17,7 @@ class BoggleTests(TestCase):
 
         with self.client:
             res = self.client.get('/')
-            self.assertIn('<h2>Instructions:</2>', res.data)
+            self.assertIn(b'<h2>Instructions:</h2>', res.data)
 
     def test_start(self):
         """Make sure the game sesison is well initialized"""
@@ -31,14 +31,16 @@ class BoggleTests(TestCase):
             self.assertEqual(session.get('highscore'), 0)
             self.assertEqual(session.get('board'), [])
 
-    def test_show_oard(self):
+    def test_show_board(self):
         """Make sure the board is displayed properly"""
 
         with self.client:
             res = self.client.get('/board')
             self.assertIn('board', session)
+            self.assertIn('play', session)
+            self.assertNotEqual(session['play'], 0)
             self.assertIn(
-                '<label for="guess">Enter your guess:</label>', res.data)
+                b'<label for="guess">Enter your guess:</label>', res.data)
 
     def test_check_word(self):
         """Test if word is valid """
@@ -48,10 +50,10 @@ class BoggleTests(TestCase):
                 session['board'] = [["N", "E", "R", "E", "A"], ["N", "E", "R", "E", "A"], [
                     "N", "E", "R", "E", "A"], ["N", "E", "R", "E", "A"], ["N", "E", "R", "E", "A"]]
 
-        res = self.client.get('/word?guess=nerea')
-        self.assertEqual(res.json['result'], 'ok')
-        res = self.client.get('/ word?guess=cat')
-        self.assertNotEqual(res.json['result'], 'ok')
+        res = self.client.get('/word?word=nerea')
+        self.assertEqual(res.json['result'], 'not-word')
+        res = self.client.get('/word?word=cat')
+        self.assertEqual(res.json['result'], 'not-on-board')
 
     def test_end(self):
         """Test if end of game works properly"""
@@ -61,6 +63,8 @@ class BoggleTests(TestCase):
                 session['highscore'] = 23
                 session['play'] = 50
 
-        res = self.client.get('/end')
-        self.assertEqual(res.json['record'], 23)
-        self.assertEqual(res.json['play'], 50)
+        info = {"finalScore": "23"}
+        res = self.client.post('/end', data=json.dumps(info))
+
+        #self.assertEqual(res.data, '23')
+        self.assertEqual(res.data.plays, '50')
