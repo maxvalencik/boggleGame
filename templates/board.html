@@ -2,19 +2,33 @@
 
 {% block content %}
 <div class="boardPage">
-    <table>
-        {% for row in board %}
-        <tr>
-            {% for letter in row %}
-            <td>{{letter}}</td>
+    <section class="header">
+        <div class="score">Score: 0</div>
+        <div class="timer">Time (s): 60</div>
+    </section>
+    <section class="table">
+        <table>
+            {% for row in board %}
+            <tr>
+                {% for letter in row %}
+                <td>{{letter}}</td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+        </table>
+        <form>
+            <label for="guess">Enter your guess:</label>
+            <input type="text" name="guess" id="guess">
+            <button id="guessSubmit">Submit</button>
+            <button id="refresh">New Board</button>
+            <button id="end" disabled="true" class="off">End Game Session</button>
+        </form>
+    </section>
+    <div class="message"></div>
+    <!-- show list of words -->
+    <div class="list">
+        <p>Words found so far:</p>
+        <ul id="wordList"></ul>
+    </div>
 </div>
-<form>
-    <label for="guess">Enter your guess:</label>
-    <input type="text" name="guess">
-    <button id="guess">Submit</button>
-</form>
 {% endblock %}
