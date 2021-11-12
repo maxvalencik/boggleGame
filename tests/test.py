@@ -33,12 +33,12 @@ class BoggleTests(TestCase):
 
     def test_show_board(self):
         """Make sure the board is displayed properly"""
-
+        session['play'] = 0
         with self.client:
             res = self.client.get('/board')
             self.assertIn('board', session)
             self.assertIn('play', session)
-            self.assertNotEqual(session['play'], 0)
+            self.assertEqual(session['play'], 1)
             self.assertIn(
                 b'<label for="guess">Enter your guess:</label>', res.data)
 
@@ -60,11 +60,11 @@ class BoggleTests(TestCase):
 
         with self.client as client:
             with client.session_transaction() as session:
-                session['highscore'] = 23
-                session['play'] = 50
+                session['highscore'] = '23'
+                session['play'] = '50'
 
-        info = {"finalScore": "23"}
-        res = self.client.post('/end', data=json.dumps(info))
+        # simulate post request with json data (as sent by JS)
+        res = self.client.post('/end', json={"finalScore": "23"})
 
-        #self.assertEqual(res.data, '23')
-        self.assertEqual(res.data.plays, '50')
+        self.assertEqual(res.json['record'], '23')
+        self.assertEqual(res.json['plays'], '50')
